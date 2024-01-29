@@ -6,6 +6,8 @@
 #include <linux/slab.h>
 #include <linux/bitfield.h>
 #include <linux/uuid.h>
+typedef uuid_le guid_t;
+#define GUID_INIT UUID_LE
 
 #include "bus.h"
 

@@ -81,6 +81,17 @@ struct xone_dongle {
 	struct workqueue_struct *event_wq;
 };
 
+static int device_add_groups(struct device *dev, const struct attribute_group **groups)
+{
+	return sysfs_create_groups(&dev->kobj, groups);
+}
+
+static void device_remove_groups(struct device *dev,
+			  const struct attribute_group **groups)
+{
+	sysfs_remove_groups(&dev->kobj, groups);
+}
+
 static void xone_dongle_prep_packet(struct xone_dongle_client *client,
 				    struct sk_buff *skb,
 				    enum xone_dongle_queue queue)

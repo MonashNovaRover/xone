@@ -257,18 +257,21 @@ EXPORT_SYMBOL_GPL(gip_destroy_adapter);
 
 static struct gip_client *gip_init_client(struct gip_adapter *adap, u8 id)
 {
+	char *init_name;
 	struct gip_client *client;
 
-	client = kzalloc(sizeof(*client), GFP_ATOMIC);
+	client = kzalloc(sizeof(*client) + 16, GFP_ATOMIC);
 	if (!client)
 		return ERR_PTR(-ENOMEM);
+	init_name = (char *)client + sizeof(*client);
+	snprintf(init_name, 16, "gip%d.%u", adap->id, id);
 
 	client->dev.parent = &adap->dev;
 	client->dev.type = &gip_client_type;
 	client->dev.bus = &gip_bus_type;
+	client->dev.init_name = init_name;
 	client->id = id;
 	client->adapter = adap;
-	dev_set_name(&client->dev, "gip%d.%u", adap->id, client->id);
 	atomic_set(&client->state, GIP_CL_CONNECTED);
 	spin_lock_init(&client->lock);
 	INIT_WORK(&client->state_work, gip_client_state_changed);
@@ -288,7 +291,9 @@ struct gip_client *gip_get_or_init_client(struct gip_adapter *adap, u8 id)
 
 	client = adap->clients[id];
 	if (!client) {
+		//spin_unlock_irqrestore(&adap->clients_lock, flags);
 		client = gip_init_client(adap, id);
+		//spin_lock_irqsave(&adap->clients_lock, flags);
 		if (IS_ERR(client))
 			goto err_unlock;
 

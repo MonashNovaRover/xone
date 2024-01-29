@@ -63,3 +63,18 @@ int xone_mt76_set_pairing(struct xone_mt76 *mt, bool enable);
 int xone_mt76_pair_client(struct xone_mt76 *mt, u8 *addr);
 int xone_mt76_associate_client(struct xone_mt76 *mt, u8 wcid, u8 *addr);
 int xone_mt76_remove_client(struct xone_mt76 *mt, u8 wcid);
+
+static inline void *skb_put_data(struct sk_buff *skb, const void *data,
+                                unsigned int len)
+{
+	void *tmp = skb_put(skb, len);
+
+	memcpy(tmp, data, len);
+
+	return tmp;
+}
+
+static inline void skb_put_u8(struct sk_buff *skb, u8 val)
+{
+	*(u8 *)skb_put(skb, 1) = val;
+}

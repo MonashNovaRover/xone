@@ -7,6 +7,12 @@
 #include <linux/uuid.h>
 #include <linux/timer.h>
 #include <linux/input.h>
+typedef uuid_le guid_t;
+#define GUID_INIT UUID_LE
+static inline bool guid_equal(const guid_t *u1, const guid_t *u2)
+{
+	return memcmp(u1, u2, sizeof(guid_t)) == 0;
+}
 
 #include "common.h"
 
@@ -91,9 +97,9 @@ struct gip_gamepad {
 	} rumble;
 };
 
-static void gip_gamepad_send_rumble(struct timer_list *timer)
+static void gip_gamepad_send_rumble(unsigned long data)
 {
-	struct gip_gamepad_rumble *rumble = from_timer(rumble, timer, timer);
+	struct gip_gamepad_rumble *rumble = (struct gip_gamepad_rumble *)data;
 	struct gip_gamepad *gamepad = container_of(rumble, typeof(*gamepad),
 						   rumble);
 	unsigned long flags;
@@ -139,7 +145,9 @@ static int gip_gamepad_init_rumble(struct gip_gamepad *gamepad)
 	struct gip_gamepad_rumble *rumble = &gamepad->rumble;
 
 	spin_lock_init(&rumble->lock);
-	timer_setup(&rumble->timer, gip_gamepad_send_rumble, 0);
+	init_timer(&rumble->timer);
+	rumble->timer.function = gip_gamepad_send_rumble;
+	rumble->timer.data = (unsigned long)rumble;
 	rumble->last = jiffies;
 
 	return input_ff_create_memless(gamepad->input.dev, NULL,

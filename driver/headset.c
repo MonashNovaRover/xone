@@ -289,6 +289,7 @@ static int gip_headset_init_pcm(struct gip_headset *headset)
 
 static int gip_headset_start_audio(struct gip_headset *headset)
 {
+	ktime_t zero = { 0 };
 	struct gip_client *client = headset->client;
 	int err;
 
@@ -301,7 +302,7 @@ static int gip_headset_start_audio(struct gip_headset *headset)
 	if (err)
 		return err;
 
-	hrtimer_start(&headset->timer, 0, HRTIMER_MODE_REL);
+	hrtimer_start(&headset->timer, zero, HRTIMER_MODE_REL);
 
 	return 0;
 }
